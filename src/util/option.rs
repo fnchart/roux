@@ -18,6 +18,8 @@ pub struct FeedOption {
     pub count: Option<u32>,
     /// What time period to request (only works on some requests, like top)
     pub period: Option<TimePeriod>,
+    /// Should items be marked as read? (only works on some requests, like unread)
+    pub mark: Option<bool>,
 }
 
 impl FeedOption {
@@ -29,6 +31,7 @@ impl FeedOption {
             count: None,
             limit: None,
             period: None,
+            mark: None,
         }
     }
 
@@ -70,6 +73,12 @@ impl FeedOption {
         self
     }
 
+    /// Set mark (as read) param.
+    pub fn mark(mut self, mark: bool) -> FeedOption {
+        self.mark = Some(mark);
+        self
+    }
+
     /// Build a url from `FeedOption`
     pub fn build_url(self, url: &mut String) {
         // Add a fake url attr so I don't have to parse things
@@ -91,6 +100,10 @@ impl FeedOption {
 
         if let Some(period) = self.period {
             url.push_str(&format!("&t={}", period.get_string_for_period()));
+        }
+
+        if let Some(mark) = self.mark {
+            url.push_str(&format!("&mark={}", mark));
         }
 
         // HACK : the previous option won't work if a '&' isn't appended for some reason
@@ -173,5 +186,16 @@ mod tests {
         options.build_url(url);
 
         assert!(*url == format!("?&count={}&", count))
+    }
+
+    #[test]
+    fn test_build_url_mark() {
+        let mark = true;
+        let options = FeedOption::new().mark(mark);
+
+        let url = &mut String::from("");
+        options.build_url(url);
+
+        assert!(*url == format!("?&mark={}&", mark))
     }
 }
