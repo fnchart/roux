@@ -219,8 +219,14 @@ impl Me {
 
     /// Get users unread messages
     #[maybe_async::maybe_async]
-    pub async fn unread(&self) -> Result<Inbox, RouxError> {
-        Ok(self.get("message/unread").await?.json::<Inbox>().await?)
+    pub async fn unread(&self, options: Option<FeedOption>) -> Result<Inbox, RouxError> {
+        let mut url = "message/unread".to_owned();
+
+        if let Some(options) = options {
+            options.build_url(&mut url);
+        }
+
+        Ok(self.get(&url).await?.json::<Inbox>().await?)
     }
 
     /// Mark messages as read
